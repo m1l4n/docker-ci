@@ -1,0 +1,49 @@
+version: "3.1"
+services:
+    gitlab:
+      container_name: '${GITLAB_CONTAINER_NAME}'
+      hostname: ${GITLAB_HOSTNAME}
+      image: ${GITLAB_IMAGE}
+      ports:
+       - 443:443
+       - ${GITLAB_APP_PORT}:80
+       - 22:22
+      volumes:
+       - ./gitlab/config:/etc/gitlab
+       - ./gitlab/logs:/var/log/gitlab
+       - ./gitlab/data:/var/opt/gitlab
+      networks:
+        default:
+          aliases:
+            - '${GITLAB_HOSTNAME}'
+      environment:
+        GITLAB_OMNIBUS_CONFIG: |
+         external_url 'http://${GITLAB_HOSTNAME}'
+
+    gitlab-runner:
+      container_name: '${GITLAB_RUNNER_CONTAINER_NAME}'
+      image: ${GITLAB_RUNNER_IMAGE}
+      volumes:
+       - /var/run/docker.sock:/var/run/docker.sock
+       - ./gitlab-runner/config:/etc/gitlab-runner
+      environment:
+       - CI_SERVER_URL=${GITLAB_RUNNER_CI_URL}
+       - CI_JOB_TOKEN=${GITLAB_RUNNER_TOKEN}
+      depends_on:
+       - 'gitlab'
+      networks:
+       - 'default'
+
+    jenkins:
+      container_name: '${JENKINS_CONTAINER_NAME}'
+      build: ./jenkins/Dockerfile
+      ports:
+       - ${JENKINS_APP_PORT}:8080
+       - 50001:50001
+      volumes:
+       - ./jenkins/data:/var/jenkins_home 
+       - /var/run/docker.sock:/var/run/docker.sock
+
+networks:
+  default:
+    driver: 'bridge'

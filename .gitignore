@@ -1,0 +1,13 @@
+.env
+.DS_Store
+
+gitlab/config/*
+gitlab/logs/*
+gitlab/data/*
+
+gitlab-runner/config/config.toml
+jenkins/install-plugins.txt
+
+jenkins/data/*
+
+!EMPTY
